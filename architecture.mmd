@@ -1,0 +1,18 @@
+flowchart TD
+
+A[Logs Input] --> B[Log Loader]
+B --> C[Text Splitter]
+C --> D[FAISS Vector Store]
+
+D --> E[Retriever]
+E --> F[Incident Agent]
+
+F --> G[Severity Classifier]
+F --> H[Fix Suggester]
+F --> I[LLM Analysis (GPT2)]
+
+G --> J[Final Report]
+H --> J
+I --> J
+
+J --> K[Output to User]
