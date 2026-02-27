@@ -2,7 +2,7 @@ from rag.loader import load_logs, split_documents
 from rag.vectorstore import create_vectorstore
 from agent.incident_agent import run_agent
 
-
+#This file starts the app by processing logs, retrieving context, and running the AI agent.
 def main():
 
     # Load logs
