@@ -1,3 +1,6 @@
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
+
 from rag.loader import load_logs, split_documents
 from rag.vectorstore import create_vectorstore
 from agent.incident_agent import run_agent
@@ -15,7 +18,7 @@ def main():
     vectorstore = create_vectorstore(split_docs)
 
     # Retrieve context
-    query = "production application crash"
+    query = input("Enter production log or incident description: ")
     retrieved_docs = vectorstore.similarity_search(query, k=1)
 
     if not retrieved_docs:

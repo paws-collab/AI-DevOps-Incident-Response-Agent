@@ -1,47 +1,28 @@
 # agent/incident_agent.py
 
-# ✅ IMPORT CONFIG (optional if you still use it elsewhere)
-import config  
-
-# ✅ Local FREE LLM (no OpenAI required)
 from transformers import pipeline
 
-# ✅ Your custom tools
 from tools.severity_tool import classify_severity
 from tools.fix_suggester import suggest_fix
 from tools.report_generator import generate_report
+from agent.reflection import reflect_analysis
 
 
-# ✅ Load FREE HuggingFace model (runs locally)
 llm_pipeline = pipeline(
-    "text2text-generation",   # ✅ FIXED
+    "text2text-generation",
     model="google/flan-t5-base",
     max_length=512
 )
 
 
-# ✅ Wrapper function for LLM call
 def call_llm(prompt: str) -> str:
-    try:
-        result = llm_pipeline(prompt)
-        return result[0]["generated_text"]
-    except Exception as e:
-        return f"LLM Error: {str(e)}"
+    result = llm_pipeline(prompt)
+    return result[0]["generated_text"]
 
 
-# ✅ MAIN AGENT FUNCTION
 def run_agent(context: str) -> dict:
-    """
-    Runs AI Incident Analysis Agent
 
-    Args:
-        context (str): Logs / error context from RAG
-
-    Returns:
-        dict: structured result with analysis, severity, fix, report
-    """
-
-    # 🔍 Step 1: Root Cause Analysis
+    # Step 1: Root Cause Analysis
     analysis_prompt = f"""
     You are an expert production support engineer.
 
@@ -52,19 +33,25 @@ def run_agent(context: str) -> dict:
 
     Logs:
     {context}
-
-    Give clear explanation.
     """
 
     analysis = call_llm(analysis_prompt)
 
-    # 🚨 Step 2: Severity Classification
+    # Step 2: AI Severity
     severity = classify_severity(context)
 
-    # 🛠 Step 3: Suggested Fix
+    # Step 3: AI Fix Suggestion
     fix = suggest_fix(context)
 
-    # 📄 Step 4: Generate Final Report
+    # Step 4: Reflection layer
+    reflection = reflect_analysis(
+        context,
+        analysis,
+        severity,
+        fix
+    )
+
+    # Step 5: Report
     report = generate_report(
         context=context,
         analysis=analysis,
@@ -72,10 +59,10 @@ def run_agent(context: str) -> dict:
         fix=fix
     )
 
-    # ✅ Final Output
     return {
         "analysis": analysis,
         "severity": severity,
         "fix": fix,
+        "reflection": reflection,
         "report": report
     }

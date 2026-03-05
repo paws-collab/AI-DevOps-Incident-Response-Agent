@@ -1,11 +1,26 @@
-def suggest_fix(log_text: str) -> str:
-    log_text = log_text.lower()
+# tools/fix_suggester.py
 
-    if "outofmemory" in log_text:
-        return "Increase memory allocation or investigate memory leaks."
-    elif "timeout" in log_text:
-        return "Optimize database queries or increase timeout configuration."
-    elif "nullreferenceexception" in log_text:
-        return "Add null checks and validate object initialization."
-    else:
-        return "Review stack trace and application logs for further investigation."
+from transformers import pipeline
+
+fix_llm = pipeline(
+    "text2text-generation",
+    model="google/flan-t5-base",
+    max_length=120
+)
+
+def suggest_fix(log_text: str) -> str:
+
+    prompt = f"""
+    You are a senior DevOps engineer.
+
+    Analyze the following production log
+    and suggest a practical fix.
+
+    Log:
+    {log_text}
+
+    Provide a short remediation step.
+    """
+
+    result = fix_llm(prompt)
+    return result[0]["generated_text"].strip()
